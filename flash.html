@@ -1,0 +1,92 @@
+<head>
+    <link href="static/styles.css" rel="stylesheet"></link>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>QuizVar</title>
+</head>
+<div class="cardDiv">
+    <h1 id="title">Title</h1>
+    <button onclick="modifyState()">hi</button>
+
+    <button class="flashcard" id="card" onclick="flip()"><p></p></button>
+    <p id="count">0/0</p>
+    <br>
+    <button class="direct" onclick="back()"><</button><button class="direct" onclick="next()">></button>
+</div>
+<div class="tab-group">
+    <button class="tab" onclick="learn()">Learn</button>
+    <button class="tab" onclick="window.location = ('create.html')">Edit</button>
+    <button class="tab" onclick="window.location = ('create.html')">New</button>
+</div>
+<script id="script">
+    function encodeASCII(string) {
+        encoded = ""
+        string.split("").forEach((char, index) => {
+            encoded += char.charCodeAt() + (index != string.split("").length - 1 ? "-" : "")
+        })
+        return encoded
+    }
+    function decodeASCII(string) {
+        decoded = ""
+        string.split("-").forEach((code) => {
+            decoded += code != "" ? String.fromCharCode(parseInt(code)) : ""
+        })
+        return decoded
+    }
+    function getCards() {
+        dict = ""
+        for(i=1;i<window.location.href.split("?").length;i++){
+            dict += window.location.href.split("?")[i]
+        }
+        dict = JSON.parse(decodeASCII(dict))
+        return dict
+    }
+
+    cards = getCards()
+    document.getElementById("title").innerText = cards.title
+    currentFlash = 0
+    document.getElementById("card").innerText = cards.terms[currentFlash]
+    var flipping = false
+    function flip() {
+        if (!flipping) {
+            flipping = true
+            originalW = document.getElementById("card").style.width
+            document.getElementById("card").style.transform = "scale(0, 1)";
+            setTimeout(() => {
+
+            document.getElementById("card").style.transform = "scale(1, 1)";
+            }, 200)
+            currentText = document.getElementById("card").innerText
+            document.getElementById("card").innerText = ""
+            setTimeout(() => {         
+                document.getElementById("card").style.width = originalW;
+                document.getElementById("card").innerText = currentText == cards.terms[currentFlash] ? cards.defs[currentFlash] : cards.terms[currentFlash]
+                flipping = false
+            }, 200)
+        }
+    }
+
+    function updateCount() {
+        document.getElementById("count").innerText = `${currentFlash + 1}/${cards.terms.length}`
+    }
+    function back() {
+        if (currentFlash > 0) {
+            currentFlash -= 1
+            document.getElementById("card").innerText = cards.terms[currentFlash]
+            updateCount()
+        }
+    }
+    function next() {
+        if (currentFlash < cards.terms.length - 1) {
+            currentFlash += 1
+            document.getElementById("card").innerText = cards.terms[currentFlash]
+            updateCount()
+        }
+    }
+
+    // review features
+    function learn() {
+
+    }
+
+    updateCount()
+</script>

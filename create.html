@@ -1,0 +1,94 @@
+<head>
+    <link href="static/styles.css" rel="stylesheet"></link>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>QuizVar</title>
+</head>
+<body onresize="windowResize()">
+    <div class="header">
+        <h1 style="color:grey;" id="headerText">View your QuizVar in action <a href="flash.html" id="link">here!</a></h1>
+    </div>
+    <input placeholder="Title" class="titleIn" id="title" oninput="update()"></input>
+    <div id="inputs">
+    </div>
+    <button class="plus" onclick="addTerm()">+</button>
+</body>
+<script>
+function encodeASCII(string) {
+    encoded = ""
+    string.split("").forEach((char, index) => {
+        encoded += char.charCodeAt() + (index != string.split("").length - 1 ? "-" : "")
+    })
+    return encoded
+}
+function decodeASCII(string) {
+    decoded = ""
+    string.split("-").forEach((code) => {
+        decoded += code != "" ? String.fromCharCode(parseInt(code)) : ""
+    })
+    return decoded
+}
+
+function update() {
+    terms = document.getElementsByClassName("firstIn")
+    defs = document.getElementsByClassName("secIn")
+
+    link = `{"title":"${document.getElementById("title").value}", "terms":[`
+    usedComma = false
+    for (index=0;index<terms.length;index++) {
+        term = terms[index]
+        if (defs[index].value != "" && term.value != "") {
+            link += `"${term.value}",`
+            usedComma = true
+        }
+    }
+    if (usedComma) {link = link.slice(0, link.length-1); usedComma = false}
+
+    link += `], "defs":[`
+    for (index=0;index<defs.length;index++) {
+        def = defs[index]
+        if (def.value != "" && terms[index].value != "") {
+            link += `"${def.value}",`
+            usedComma = true
+        }
+    }
+    if (usedComma) {link = link.slice(0, link.length-1); usedComma = false}
+    link += "]}"
+
+    link = encodeASCII(link)
+    updateLink = `flash.html?${link}`
+    document.getElementById("link").href = updateLink
+}
+
+function resize(area) {
+    area.style.height = "1px"
+    area.style.height = area.scrollHeight + "px"
+    update()
+}
+
+var id = 0
+function addTerm() {
+    termDiv = document.createElement("div")
+    termDiv.innerHTML = `
+        <div class="flashIn" id="${id}">
+            <input placeholder="Term" class="firstIn" oninput="update()"></input>
+            <p class="divider">&nbsp;-&nbsp;</p>
+            <textarea placeholder="Definition" class="secIn" oninput="resize(this)"></textarea>
+            <button class="plus" onclick="remove(this.parentNode)">&#9746;</button>
+        </div>`
+    document.getElementById("inputs").appendChild(termDiv)
+    id++
+}
+function remove(wrapper) {
+    wrapper.parentNode.removeChild(wrapper)
+} 
+addTerm()
+
+function windowResize() {
+    secs = document.getElementsByClassName("secIn")
+    for (i=0; i<secs.length; i++) {
+        sec = secs[i]
+        resize(sec)
+    }
+}
+windowResize()
+</script>
